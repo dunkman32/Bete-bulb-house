@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ka">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f3ef" />
+    <meta
+      name="description"
+      content="BETE — რელსური და LED განათება, ნათურები, როზეტები, ჩამრთველები და ჭკვიანი სახლი. მონტაჟით."
+    />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <title>BETE — ონლაინ მაღაზია</title>
+    <script>
+      // The theme before the first paint (no light flash in the dark theme). Same rule as
+      // src/lib/theme.ts: the saved choice, else the system's.
+      (function () {
+        var theme = 'light';
+        try {
+          var saved = localStorage.getItem('bete-theme');
+          theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        } catch (error) {}
+        document.documentElement.dataset.theme = theme;
+        if (theme === 'dark') {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f1012');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,406 @@
+@import 'tailwindcss';
+
+/* `dark:` follows the app's own switch (data-theme on <html>, see lib/theme.ts), not the OS. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Design tokens. Use the semantic names (bg-background, text-muted-foreground, border-border, …),
+ * never raw colors in components. Add a token here (light) and below (dark) instead.
+ */
+@theme {
+  --font-sans: 'Noto Sans Georgian Variable', ui-sans-serif, system-ui, sans-serif;
+  /* Headings: the same family, light and tight (see .font-display below). */
+  --font-display: 'Noto Sans Georgian Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #f5f3ef; /* page: warm plaster */
+  --color-card: #ffffff; /* cards, drawers, inputs */
+  --color-foreground: #141518; /* text: graphite */
+  --color-subtle: #46464a; /* secondary text */
+  --color-muted: #ebe8e2; /* inset surfaces, image placeholders */
+  --color-muted-foreground: #63625c; /* hints, meta */
+  --color-border: #e0ddd6;
+  --color-primary: #141518; /* main buttons */
+  --color-primary-foreground: #f5f3ef;
+  --color-accent: #8f6420; /* brass: sale prices, highlights */
+  --color-accent-foreground: #ffffff;
+  --color-accent-soft: #f1e7d6;
+  --color-ink: #141518; /* always-dark bands: announcement bar, footer, kelvin tiles */
+  --color-on-ink: #f5f3ef;
+  --color-glow: #f2b257; /* warm light, decorative only (never text on light) */
+  --color-success: #3f6b4f;
+  --color-scrim: #0c0d0f; /* shades over photos (with an opacity: bg-scrim/50) */
+  --color-on-scrim: #ffffff; /* text on photos */
+  --color-backdrop: rgb(28 26 23 / 0.4); /* behind drawers */
+
+  /* Color temperatures (the kelvin guide, swatches and lit bulbs). */
+  --color-kelvin-2700: #ffb46b;
+  --color-kelvin-3000: #ffc587;
+  --color-kelvin-4000: #ffe4c4;
+  --color-kelvin-6000: #e6efff;
+  --color-rgb-light: #ff7ad9;
+
+  /* The festive trees (components/shared/festive-trees.tsx). */
+  --color-tree: #2f5a43;
+  --color-tree-shade: #264b37;
+  --color-trunk: #6b4a32;
+  --color-wire: #1f3327;
+  --color-bulb-off: #d6d2c8;
+  --color-star-off: #c8b27a;
+  --color-snow: #ffffff;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-fade-up: fade-up 0.9s var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 1.2s var(--ease-out-soft) both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      translate: 0 1.25rem;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      scale: 1.04;
+    }
+  }
+  @keyframes shimmer {
+    50% {
+      opacity: 0.55;
+    }
+  }
+}
+
+/* Dark: the same brand (graphite, brass, warm light), lights off in the room. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-background: #0f1012;
+  --color-card: #17181b;
+  --color-foreground: #ecebe7;
+  --color-subtle: #b9b7b1;
+  --color-muted: #1f2024;
+  --color-muted-foreground: #8f8d86;
+  --color-border: #2a2b30;
+  --color-primary: #ecebe7;
+  --color-primary-foreground: #0f1012;
+  --color-accent: #d4a24c;
+  --color-accent-foreground: #141518;
+  --color-accent-soft: #2a2216;
+  --color-ink: #08090b;
+  --color-on-ink: #ecebe7;
+  --color-success: #6fae84;
+  --color-backdrop: rgb(0 0 0 / 0.6);
+  --color-tree: #173126;
+  --color-tree-shade: #10241b;
+  --color-trunk: #3b2a1e;
+  --color-wire: #0a140f;
+  --color-bulb-off: #3a3b40;
+  --color-star-off: #5a4d2c;
+  --color-snow: #1b1d23;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-optical-sizing: auto;
+  }
+
+  .font-display {
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-soft);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 3px;
+  }
+
+  /* A modal dialog (drawer) is open: keep the page from scrolling under it. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* Native <dialog> as a side sheet (see components/ui/drawer.tsx). */
+  .drawer {
+    --drawer-duration: 0.45s;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    max-width: 100vw;
+    max-height: 100dvh;
+    background: var(--color-card);
+    color: var(--color-foreground);
+    transition:
+      translate var(--drawer-duration) var(--ease-out-soft),
+      overlay var(--drawer-duration) allow-discrete,
+      display var(--drawer-duration) allow-discrete;
+  }
+  .drawer[data-side='right'] {
+    inset: 0 0 0 auto;
+    height: 100dvh;
+    width: min(28rem, 100vw);
+    translate: 100% 0;
+  }
+  .drawer[data-side='left'] {
+    inset: 0 auto 0 0;
+    height: 100dvh;
+    width: min(24rem, 100vw);
+    translate: -100% 0;
+  }
+  .drawer[data-side='top'] {
+    inset: 0 0 auto 0;
+    width: 100vw;
+    translate: 0 -100%;
+  }
+  .drawer[open] {
+    translate: 0 0;
+  }
+  @starting-style {
+    .drawer[data-side='right'][open] {
+      translate: 100% 0;
+    }
+    .drawer[data-side='left'][open] {
+      translate: -100% 0;
+    }
+    .drawer[data-side='top'][open] {
+      translate: 0 -100%;
+    }
+  }
+
+  .drawer::backdrop {
+    background: transparent;
+    transition:
+      background var(--drawer-duration) var(--ease-out-soft),
+      overlay var(--drawer-duration) allow-discrete,
+      display var(--drawer-duration) allow-discrete;
+  }
+  .drawer[open]::backdrop {
+    background: var(--color-backdrop);
+  }
+  @starting-style {
+    .drawer[open]::backdrop {
+      background: transparent;
+    }
+  }
+
+  /* The header's catalog panel (a native popover; its `top` is set when opened). */
+  .mega-menu {
+    position: fixed;
+    inset: auto 0 auto 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-height: calc(100dvh - 80px);
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-foreground);
+    box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.3);
+    opacity: 0;
+    translate: 0 -0.5rem;
+    transition:
+      opacity 0.3s var(--ease-out-soft),
+      translate 0.3s var(--ease-out-soft),
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+  .mega-menu:popover-open {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    .mega-menu:popover-open {
+      opacity: 0;
+      translate: 0 -0.5rem;
+    }
+  }
+
+  /*
+   * Bulbs (features/catalog/components/bulb-light.tsx): off in the light theme (a little dull),
+   * switched on in the dark one — each flickers on after its own delay, then glows in its own
+   * color temperature (--light).
+   */
+  .bulb-photo {
+    filter: saturate(0.6) brightness(0.96);
+    transition: filter 0.6s var(--ease-out-soft);
+  }
+  .bulb-glow {
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    background: radial-gradient(
+      circle at 50% 42%,
+      color-mix(in oklab, var(--light) 70%, transparent),
+      color-mix(in oklab, var(--light) 22%, transparent) 36%,
+      transparent 72%
+    );
+    transition: opacity 0.3s;
+  }
+  .bulb-halo {
+    transition: box-shadow 0.8s var(--ease-out-soft);
+  }
+  [data-theme='dark'] .bulb-photo {
+    filter: saturate(1.15) brightness(1.08);
+  }
+  [data-theme='dark'] .bulb-glow {
+    opacity: 1;
+    animation: bulb-on 1.1s var(--light-delay, 0s) both;
+  }
+  [data-theme='dark'] .bulb-halo {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--light) 28%, transparent),
+      0 20px 60px -14px color-mix(in oklab, var(--light) 60%, transparent);
+  }
+
+  /*
+   * The festive trees: bulbs off by day. At night each one (--on: its turn along the garland)
+   * flickers on in its color (--c), then twinkles (--tw, --tw-delay); so do the star and the sky.
+   */
+  .festive-bulb-glass {
+    fill: var(--color-bulb-off);
+  }
+  .festive-star {
+    fill: var(--color-star-off);
+  }
+  .festive-bulb-halo,
+  .festive-sky {
+    opacity: 0;
+  }
+  [data-theme='dark'] .festive-bulb-glass {
+    animation: festive-glass 0.5s var(--on) both;
+  }
+  [data-theme='dark'] .festive-star {
+    animation: festive-star 0.8s var(--on) both;
+  }
+  [data-theme='dark'] .festive-bulb-halo {
+    animation:
+      bulb-on 0.6s var(--on) both,
+      twinkle var(--tw) var(--tw-delay) ease-in-out infinite;
+  }
+  [data-theme='dark'] .festive-sky {
+    opacity: 0.8;
+    animation: twinkle var(--tw) var(--tw-delay) ease-in-out infinite;
+  }
+
+  /* Hide a scroll container's scrollbar (rails, galleries); it still scrolls. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* A bulb switching on: a few uneven flickers, then steady. */
+@keyframes bulb-on {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  12% {
+    opacity: 0.1;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  24% {
+    opacity: 0.35;
+  }
+  38%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes festive-glass {
+  0% {
+    fill: var(--color-bulb-off);
+  }
+  25% {
+    fill: var(--c);
+  }
+  40% {
+    fill: var(--color-bulb-off);
+  }
+  60%,
+  100% {
+    fill: var(--c);
+  }
+}
+
+@keyframes festive-star {
+  0% {
+    fill: var(--color-star-off);
+  }
+  30% {
+    fill: #ffd166;
+  }
+  45% {
+    fill: var(--color-star-off);
+  }
+  70%,
+  100% {
+    fill: #ffd166;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* The theme switch reveals the new theme in a circle from the bulb (lib/theme.ts). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Sections ease in as they scroll into view (CSS only; browsers without it just show them). */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    /* Endless animations (twinkle, shimmer) would otherwise flash every frame. */
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
